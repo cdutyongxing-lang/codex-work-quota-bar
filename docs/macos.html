@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Codex Work 额度条 · 使用说明</title>
+<style>
+:root{color-scheme:light dark}body{max-width:760px;margin:56px auto;padding:0 24px;font:16px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}h1{line-height:1.25}h2{margin-top:2em}code{font-size:.92em;padding:2px 5px;border-radius:4px;background:#80808020}.note{padding:16px 20px;border-left:3px solid #4a9982;background:#80808012}a{color:#448eaf}li{margin:8px 0}
+</style>
+<body>
+<h1>Codex Work 额度条</h1>
+<p>在 macOS 菜单栏同时查看 5 小时与每周剩余额度。</p>
+<p class="note"><strong>没有普通主窗口是正常现象。</strong>打开应用后，请查看屏幕顶部菜单栏中的圆环图标和额度数字。菜单栏模式不需要辅助功能权限。</p>
+<h2>开始使用</h2>
+<ol><li>把 <code>CodexQuotaBar.app</code> 放入“应用程序”并双击打开。</li><li>打开已登录的 ChatGPT / Codex 主应用，等待几秒。</li><li>菜单栏显示类似 <code>5h 80% · 周 65%</code> 的读数；数字为示例，实际显示取决于账户返回。</li></ol>
+<h2>额度与刷新</h2>
+<p>百分比均表示剩余。约每 60 秒读取一次额度，不发送提示词或创建模型任务。查询本身不应消耗模型额度；正常执行任务仍会使用额度。主应用在后台时仍会查询。</p>
+<p>点击菜单查看重置倒计时，悬停可查看北京时间重置日期和最近读取时间。“暂停自动刷新”停止后续自动查询并隐藏悬浮条，菜单栏会标记“已暂停”；已发出的请求可能完成。“立即刷新一次”在暂停时也可使用，读取后仍保持暂停。“恢复自动刷新”会立即尝试读取。“退出额度条”结束程序。</p>
+<p>主应用退出后，旧数据标记“待更新”；重新打开后重新连接。若主动暂停过，重新打开主应用后仍会保持暂停。完全退出并重开额度条后，自动刷新默认开启。v1.0.2 修复了旧版暂停时手动刷新失效的问题；更新前请先退出旧版。</p>
+<h2>可选：跟随窗口</h2>
+<ol><li>勾选“跟随 ChatGPT 窗口（需辅助功能）”。</li><li>自行在系统设置中决定是否授予辅助功能权限。</li><li>切回主应用。若无法定位，使用“手动校准位置”，拖到空白处，再右键选择“完成校准”。</li></ol>
+<p>跟随默认关闭。辅助功能权限范围比窗口定位用途广，仅在信任此构建时授予。布局变化可能导致定位失败，菜单栏仍可使用。</p>
+<h2>找不到 CLI 或没有额度？</h2>
+<p>先点击菜单检查状态，确认主应用已打开、网络正常、CLI 与桌面应用登录同一 ChatGPT 账户。菜单可手动“选择 Codex CLI…”。新版内置 CLI 常见相对路径为 <code>Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex</code>。部分账户或 API Key 登录模式可能没有此类数据。</p>
+<p>工具不直接读取登录令牌，不要向他人提交密码、Cookie、API Key 或 <code>auth.json</code>。失败时保留旧值并标记待更新，不将缺失数据视为满额。</p>
+<h2>签名、更新与移除</h2>
+<p>本应用使用 ad-hoc 签名，尚无 Apple Developer ID 签名或公证。遇到系统拦截时，先核对来源，再参照 <a href="https://support.apple.com/zh-cn/102445">Apple 官方说明</a>决定是否打开。无需关闭全系统安全保护。</p>
+<p>更新前先退出旧版，再替换应用。登录启动需要主动开启；启用前先将应用放到稳定位置。移除前关闭登录启动并退出，再删除应用。无需删除 Codex 登录文件。</p>
+<h2>来源与许可</h2>
+<p>基于 <a href="https://github.com/Thinkdiff-lw/codex-quota-bar/tree/v1.0.0">Thinkdiff-lw/codex-quota-bar v1.0.0</a> 的 macOS 适配。保留 MIT 许可证；应用内 Resources 目录包含 LICENSE 与 NOTICE。与 OpenAI 无隶属关系。完整源码、隐私说明与构建步骤见下载本应用的仓库。</p>
+</body></html>

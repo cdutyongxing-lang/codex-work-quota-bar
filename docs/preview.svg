@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc">
+  <title id="title">Codex Work Quota Bar 效果示意</title>
+  <desc id="desc">深色菜单栏显示 5 小时剩余 80%、周剩余 65%，下方介绍每分钟刷新和无需辅助功能权限的菜单栏模式。所有数字均为示例。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111d24"/><stop offset="1" stop-color="#0d1218"/></linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#25333d"/><stop offset="1" stop-color="#1b252e"/></linearGradient>
+  </defs>
+  <rect width="1200" height="600" rx="24" fill="url(#bg)"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="64" y="78" fill="#8edbc5" font-size="15" letter-spacing="3">CODEX WORK QUOTA BAR</text>
+    <text x="64" y="137" fill="#f3f7f9" font-size="38" font-weight="650">剩多少，看一眼就知道。</text>
+    <text x="64" y="177" fill="#a6b6c0" font-size="19">5 小时与每周剩余额度，同时放在菜单栏。</text>
+    <rect x="64" y="221" width="1072" height="76" rx="16" fill="url(#card)" stroke="#40505b"/>
+    <text x="91" y="267" fill="#bcc7ce" font-size="20" font-weight="600">ChatGPT</text>
+    <text x="214" y="267" fill="#80939f" font-size="18">文件　 编辑　 显示</text>
+    <rect x="683" y="235" width="343" height="48" rx="10" fill="#101b23" stroke="#4b8b78"/>
+    <circle cx="709" cy="259" r="10" fill="none" stroke="#a5e5d3" stroke-width="2"/>
+    <path d="M709 249 V259 L717 265" fill="none" stroke="#a5e5d3" stroke-width="2"/>
+    <text x="732" y="267" fill="#f0faf6" font-size="23" font-weight="550">5h 80% · 周 65%</text>
+    <text x="1050" y="266" fill="#a6b6c0" font-size="18">20:30</text>
+    <rect x="64" y="336" width="330" height="140" rx="16" fill="#18242d" stroke="#2a3c47"/>
+    <text x="90" y="378" fill="#8edbc5" font-size="17">双额度</text>
+    <text x="90" y="418" fill="#f1f6f8" font-size="24" font-weight="600">5h + 每周</text>
+    <text x="90" y="450" fill="#a6b6c0" font-size="16">百分比均表示剩余</text>
+    <rect x="435" y="336" width="330" height="140" rx="16" fill="#18242d" stroke="#2a3c47"/>
+    <text x="461" y="378" fill="#8edbc5" font-size="17">自动刷新</text>
+    <text x="461" y="418" fill="#f1f6f8" font-size="24" font-weight="600">每 60 秒</text>
+    <text x="461" y="450" fill="#a6b6c0" font-size="16">只读取状态，不创建模型任务</text>
+    <rect x="806" y="336" width="330" height="140" rx="16" fill="#18242d" stroke="#2a3c47"/>
+    <text x="832" y="378" fill="#8edbc5" font-size="17">开箱使用</text>
+    <text x="832" y="418" fill="#f1f6f8" font-size="24" font-weight="600">菜单栏模式</text>
+    <text x="832" y="450" fill="#a6b6c0" font-size="16">无需辅助功能权限</text>
+    <text x="64" y="542" fill="#80939f" font-size="15">macOS 13+ · 社区适配版 · 图中数字为示意，实际以账户返回为准</text>
+  </g>
+</svg>
