@@ -4,7 +4,7 @@
 
 建议仓库描述：`在 macOS 菜单栏查看 Codex 的 5 小时与每周剩余额度，支持 ChatGPT / Work。`
 
-本目录已经整理为源码仓库根目录。保留 `LICENSE`、`NOTICE` 和 README 中的上游来源；当前版本为 `1.0.2`，是基于上游 `v1.0.0` 的适配版本。
+本目录已经整理为源码仓库根目录。保留 `LICENSE`、`NOTICE` 和 README 中的上游来源；当前版本为 `1.1.1`，是基于上游 `v1.0.0` 的适配版本。
 
 ## 方式一：网页上传
 
@@ -40,7 +40,7 @@ git push -u origin main
 
 1. 先检查当前提交，确认就是你准备分享的版本。
 2. 仓库页面打开 **Releases → Draft a new release**。
-3. 使用标签 `v1.0.2`，标题可写 `Codex Work Quota Bar v1.0.2`。
+3. 使用标签 `v1.1.1`，标题可写 `Codex Work Quota Bar v1.1.1`。
 4. 复制 `docs/RELEASE_NOTES.md` 的内容作为说明。
 5. 添加配套发布文件中的 `CodexWorkQuotaBar-macOS.zip` 和 `.sha256`。
 6. 检查后自行发布；悬浮跟随仍在验证中，可按需要标记为预发布。
@@ -52,8 +52,8 @@ git push -u origin main
 已提供 `.github/workflows/macos.yml`。推送主分支 / PR 会测试和构建；在本机推送标签后，会创建 Release 草稿：
 
 ```bash
-git tag v1.0.2
-git push origin v1.0.2
+git tag v1.1.1
+git push origin v1.1.1
 ```
 
 工作流在 GitHub 的 macOS runner 中运行，使用仓库自动提供的 `GITHUB_TOKEN` 创建草稿，不需要把个人 Token 写进源码。草稿已附带应用包和校验文件，你检查后再发布。若仓库策略禁用 Actions 或限制写权限，需要按仓库策略处理，也可以改为手动发布。
