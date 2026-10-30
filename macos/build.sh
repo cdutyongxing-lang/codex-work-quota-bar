@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p build dist
 sdk="$(xcrun --sdk macosx --show-sdk-path)"
-sources=(Sources/Quota.swift Sources/RefreshState.swift Sources/AppServer.swift Sources/Anchor.swift Sources/QuotaView.swift Sources/main.swift)
+sources=(Sources/Quota.swift Sources/RefreshState.swift Sources/QuotaGuard.swift Sources/AppServer.swift Sources/Anchor.swift Sources/QuotaView.swift Sources/main.swift)
 for arch in arm64 x86_64; do
   xcrun swiftc -swift-version 5 -O -sdk "$sdk" -target "$arch-apple-macosx13.0" \
     -framework AppKit -framework ApplicationServices -framework ServiceManagement \
@@ -14,6 +14,7 @@ mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 lipo -create build/CodexQuotaBar-arm64 build/CodexQuotaBar-x86_64 -output "$app/Contents/MacOS/CodexQuotaBar"
 cp Info.plist "$app/Contents/Info.plist"
 cp ../docs/macos.html "$app/Contents/Resources/使用说明.html"
+cp ../docs/QUOTA_GUARD.md "$app/Contents/Resources/QUOTA_GUARD.md"
 cp ../LICENSE "$app/Contents/Resources/LICENSE"
 cp ../NOTICE "$app/Contents/Resources/NOTICE"
 cp ../docs/macos.md dist/使用说明.md

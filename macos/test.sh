@@ -2,5 +2,5 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p build
-xcrun swiftc -swift-version 5 Sources/Quota.swift Sources/RefreshState.swift Sources/AppServer.swift Tests/main.swift -o build/quota-tests
+xcrun swiftc -swift-version 5 Sources/Quota.swift Sources/RefreshState.swift Sources/QuotaGuard.swift Sources/AppServer.swift Tests/main.swift -o build/quota-tests
 build/quota-tests
