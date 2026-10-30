@@ -9,7 +9,8 @@ Upstream commit: 141b6ce6c45cf2acd44d8326414d2946e84a68ff
 The upstream MIT license and copyright notice are preserved in LICENSE.
 Changes include application and CLI path detection, dual quota display in the
 menu bar and overlay, optional Accessibility-based following, pause behavior,
-and documentation / packaging for the macOS adaptation.
+documentation / packaging for the macOS adaptation, and optional low-quota
+checkpoint prompts through trusted local Codex PostToolUse hooks.
 
 This is an independent community adaptation. It is not an official OpenAI
 product and is not the upstream author's original release binary.
