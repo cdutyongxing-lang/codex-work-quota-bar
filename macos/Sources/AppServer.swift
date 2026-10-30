@@ -54,7 +54,7 @@ final class AppServer {
             try process.run()
             _ = try request("initialize", params: ["clientInfo": [
                 "name": "codex_quota_bar", "title": "Codex Work Quota Bar",
-                "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.2"
+                "version": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.1.0"
             ]])
             try send(["method": "initialized", "params": [:]])
         } catch {

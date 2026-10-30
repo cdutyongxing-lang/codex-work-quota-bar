@@ -25,6 +25,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var placementStatus: String?
     private var stale = false
     private var timer: Timer?
+    private let guardFiles = QuotaGuardFiles()
+    private var guardEnabled = false
+    private var guardThreshold = 15
+    private var guardError: String?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard !NSWorkspace.shared.runningApplications.contains(where: {
@@ -34,6 +38,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         manual = defaults.bool(forKey: "manualPlacement")
         followWindow = defaults.bool(forKey: "followWindow")
         selectedBucket = defaults.string(forKey: "bucket")
+        guardEnabled = defaults.bool(forKey: "quotaGuardEnabled")
+        let savedThreshold = defaults.object(forKey: "quotaGuardThreshold") as? Int ?? 15
+        guardThreshold = QuotaGuardState.validThreshold(savedThreshold) ? savedThreshold : 15
+        if guardEnabled {
+            do {
+                if let executable = Bundle.main.executableURL {
+                    try QuotaGuardInstaller().install(executable: executable)
+                }
+            } catch {
+                guardEnabled = false
+                guardError = "低额度接入更新失败：" + error.localizedDescription
+            }
+        }
         panel = QuotaPanel(contentRect: NSRect(x: 0, y: 0, width: 360, height: 26),
                           styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.level = .floating
@@ -175,6 +192,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateContent() {
+        publishGuardState()
         view.windows = snapshot?.windows(snapshot?.selected(selectedBucket)) ?? []
         view.status = status
         view.stale = stale
@@ -193,6 +211,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         view.toolTip = lines.isEmpty ? status : lines.joined(separator: "\n")
         item.button?.toolTip = view.toolTip
         updateMenu()
+    }
+
+    private func publishGuardState() {
+        let enabled = guardEnabled && !paused && !stale && refreshState.hostPID != nil
+        do {
+            try guardFiles.publish(QuotaGuardState(enabled: enabled, threshold: guardThreshold, snapshot: snapshot))
+        } catch { guardError = "保护状态写入失败：" + error.localizedDescription }
     }
 
     private func add(_ menu: NSMenu, _ title: String, _ action: Selector, state: Bool? = nil) -> NSMenuItem {
@@ -228,6 +253,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             parent.submenu = sub; menu.addItem(parent)
         }
         _ = add(menu, paused ? "恢复自动刷新" : "暂停自动刷新", #selector(togglePaused))
+        let protection = NSMenuItem(title: "Codex 低额度保护（\(guardThreshold)%）", action: nil, keyEquivalent: "")
+        let protectionMenu = NSMenu()
+        _ = add(protectionMenu, "启用低额度提示", #selector(toggleGuard), state: guardEnabled)
+        let receipt = guardFiles.receipt()
+        let connected = receipt.map { Date().timeIntervalSince1970 - $0.lastCheckAt < 180 } ?? false
+        let guardStatus = guardError ?? (guardEnabled ? (connected ? "最近已收到 Codex Hook 检查" : "等待 Codex Hook 调用；首次需 /hooks 信任") : "未启用，不发送提示")
+        let protectionInfo = NSMenuItem(title: guardStatus, action: nil, keyEquivalent: "")
+        protectionInfo.isEnabled = false; protectionMenu.addItem(protectionInfo)
+        if receipt?.hasPrompted(now: Date().timeIntervalSince1970) == true {
+            let info = NSMenuItem(title: "本周期已提醒；继续工作由你决定", action: nil, keyEquivalent: "")
+            info.isEnabled = false; protectionMenu.addItem(info)
+        }
+        if let sent = receipt?.lastSentAt {
+            let time = DateFormatter.localizedString(from: Date(timeIntervalSince1970: sent), dateStyle: .short, timeStyle: .short)
+            let info = NSMenuItem(title: "最近生成提示：\(time)（不代表已保存）", action: nil, keyEquivalent: "")
+            info.isEnabled = false; protectionMenu.addItem(info)
+        }
+        protectionMenu.addItem(.separator())
+        for value in [5, 10, 15, 20, 25, 30] {
+            let entry = add(protectionMenu, "剩余 \(value)% 时提示", #selector(selectGuardThreshold(_:)), state: value == guardThreshold)
+            entry.representedObject = value
+        }
+        _ = add(protectionMenu, "自定义阈值…", #selector(customGuardThreshold))
+        protectionMenu.addItem(.separator())
+        _ = add(protectionMenu, "打开 Codex Hook 审查终端…", #selector(openGuardReview))
+        _ = add(protectionMenu, "接入与权限说明…", #selector(guardHelp))
+        _ = add(protectionMenu, "移除本工具的 Hook 接入", #selector(removeGuard))
+        protection.submenu = protectionMenu; menu.addItem(protection)
         _ = add(menu, "跟随 ChatGPT 窗口（需辅助功能）", #selector(toggleFollow), state: followWindow)
         _ = add(menu, calibrating ? "完成校准" : "手动校准位置", #selector(calibrate))
         _ = add(menu, "恢复自动定位", #selector(restore))
@@ -248,6 +301,62 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func togglePaused() {
         refreshState.setPaused(!paused)
         updateContent(); tick()
+    }
+    @objc private func toggleGuard() {
+        if guardEnabled {
+            guardEnabled = false
+        } else {
+            do {
+                guard let executable = Bundle.main.executableURL else { throw QuotaError.message("无法找到保护接入程序") }
+                try QuotaGuardInstaller().install(executable: executable)
+                guardEnabled = true
+            } catch { showError("低额度保护接入失败", error.localizedDescription); return }
+        }
+        guardError = nil
+        defaults.set(guardEnabled, forKey: "quotaGuardEnabled")
+        updateContent()
+        if guardEnabled { guardHelp() }
+    }
+    @objc private func selectGuardThreshold(_ sender: NSMenuItem) {
+        guard let value = sender.representedObject as? Int, QuotaGuardState.validThreshold(value) else { return }
+        guardThreshold = value
+        defaults.set(value, forKey: "quotaGuardThreshold")
+        updateContent()
+    }
+    @objc private func customGuardThreshold() {
+        NSApp.activate(ignoringOtherApps: true)
+        let alert = NSAlert()
+        alert.messageText = "设置剩余额度提示阈值"
+        alert.informativeText = "输入 1–90 的整数。例如 15 表示 5 小时剩余额度不高于 15% 时提示保存进度。"
+        let field = NSTextField(string: String(guardThreshold))
+        field.frame = NSRect(x: 0, y: 0, width: 240, height: 24)
+        alert.accessoryView = field
+        alert.addButton(withTitle: "保存"); alert.addButton(withTitle: "取消")
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        guard let value = Int(field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)),
+              QuotaGuardState.validThreshold(value) else { showError("阈值无效", "请输入 1–90 的整数"); return }
+        guardThreshold = value
+        defaults.set(value, forKey: "quotaGuardThreshold")
+        updateContent()
+    }
+    @objc private func guardHelp() {
+        showError("Codex 低额度提示接入", "首次启用会把本工具的 PostToolUse Hook 合并到 Codex 用户 hooks.json；已有配置会保留并备份。\n\n从本菜单打开“Codex Hook 审查终端”，在 CLI 中输入 /hooks，审查并信任包含 quota-hook 的 PostToolUse 条目，然后退出审查终端，重新打开主应用并启动新会话。未完成信任时不会生效；全程不会替你接受信任或绕过检查。\n\n额度达到阈值后，任务在下一次工具调用完成时收到保存进度并结束本轮的提示；同一本机工具共享的 5 小时周期内，所有会话合计最多一次；你之后发出继续指令即可继续，不必等待重置。它不强制中断，也不能保证 AI 已完成保存。\n\n仅支持加载了该 Hook 的本机 Codex；不控制云端 ChatGPT Work。暂停刷新或关闭保护会停用提示，退出工具也会停用。收尾过程会使用模型额度。")
+    }
+    @objc private func openGuardReview() {
+        guard let app = NSWorkspace.shared.runningApplications.first(where: { isCodex($0) }),
+              let cli = executable(app) else { showError("未找到 Codex CLI", "请先打开主应用，或从菜单选择官方 Codex CLI"); return }
+        do {
+            let script = try QuotaGuardInstaller().reviewLauncher(cli: cli)
+            NSWorkspace.shared.open(script)
+        } catch { showError("无法准备审查终端", error.localizedDescription) }
+    }
+    @objc private func removeGuard() {
+        guardEnabled = false
+        defaults.set(false, forKey: "quotaGuardEnabled")
+        publishGuardState()
+        do { try QuotaGuardInstaller().remove(); guardError = nil }
+        catch { guardError = "移除 Hook 失败：" + error.localizedDescription; showError("移除接入失败", error.localizedDescription) }
+        updateContent()
     }
     @objc private func toggleFollow() {
         followWindow.toggle()
@@ -317,7 +426,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert(); alert.messageText = title; alert.informativeText = message; alert.runModal()
     }
-    func applicationWillTerminate(_ notification: Notification) { server?.close() }
+    func applicationWillTerminate(_ notification: Notification) {
+        try? guardFiles.publish(QuotaGuardState(enabled: false, threshold: guardThreshold, snapshot: snapshot))
+        server?.close()
+    }
+}
+
+if CommandLine.arguments.contains("--quota-hook") {
+    QuotaGuardFiles.runHook()
+    exit(0)
 }
 
 let application = NSApplication.shared
